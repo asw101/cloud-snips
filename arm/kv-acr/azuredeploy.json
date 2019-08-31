@@ -1,0 +1,270 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "acrName": {
+            "type": "string",
+            "maxLength": 50,
+            "defaultValue": "",
+            "metadata": {
+                "description": "Name of your Azure Container Registry"
+            }
+        },
+        "acrAdminUserEnabled": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Enable admin user that have push / pull permission to the registry."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        },
+        "acrSku": {
+            "type": "string",
+            "metadata": {
+                "description": "Tier of your Azure Container Registry."
+            },
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic",
+                "Standard",
+                "Premium"
+            ]
+        },
+        "keyVaultName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Specifies the name of the key vault."
+            }
+        },
+        "enabledForDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Specifies whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault."
+            }
+        },
+        "enabledForDiskEncryption": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Specifies whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys."
+            }
+        },
+        "enabledForTemplateDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "allowedValues": [
+                true,
+                false
+            ],
+            "metadata": {
+                "description": "Specifies whether Azure Resource Manager is permitted to retrieve secrets from the key vault."
+            }
+        },
+        "tenantId": {
+            "type": "string",
+            "defaultValue": "[subscription().tenantId]",
+            "metadata": {
+                "description": "Specifies the Azure Active Directory tenant ID that should be used for authenticating requests to the key vault. Get it by using Get-AzSubscription cmdlet."
+            }
+        },
+        "objectId": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Specifies the object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies. Get it by using Get-AzADUser or Get-AzADServicePrincipal cmdlets."
+            }
+        },
+        "keysPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "list"
+            ],
+            "metadata": {
+                "description": "Specifies the permissions to keys in the vault. Valid values are: all, encrypt, decrypt, wrapKey, unwrapKey, sign, verify, get, list, create, update, import, delete, backup, restore, recover, and purge."
+            }
+        },
+        "secretsPermissions": {
+            "type": "array",
+            "defaultValue": [
+                "list"
+            ],
+            "metadata": {
+                "description": "Specifies the permissions to secrets in the vault. Valid values are: all, get, list, set, delete, backup, restore, recover, and purge."
+            }
+        },
+        "skuName": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Specifies whether the key vault is a standard vault or a premium vault."
+            }
+        },
+        "secretName": {
+            "type": "string",
+            "defaultValue": "hello",
+            "metadata": {
+                "description": "Specifies the name of the secret that you want to create."
+            }
+        },
+        "secretValue": {
+            "type": "securestring",
+            "defaultValue": "world",
+            "metadata": {
+                "description": "Specifies the value of the secret that you want to create."
+            }
+        },
+        "roleNameGuid": {
+            "type": "string",
+            "defaultValue": "[newGuid()]",
+            "metadata": {
+                "description": "A new GUID used to identify the role assignment"
+            }
+        }
+    },
+    "variables": {
+        "identityName": "[concat(resourceGroup().name, '-identity')]",
+        "acrName": "[if(equals(parameters('acrName'), ''), concat('acr', uniqueString(resourceGroup().id)), parameters('acrName'))]",
+        "keyvaultName": "[if(equals(parameters('keyvaultName'), ''), concat('kv', uniqueString(resourceGroup().id)), parameters('keyvaultName'))]",
+        "roleOwner": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '8e3af657-a8ff-443c-a75c-2fe8c4bcb635')]",
+        "roleContributor": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
+        "roleReader": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'acdd72a7-3385-48ef-bd42-f606fba81ae7')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "name": "[variables('identityName')]",
+            "apiVersion": "2018-11-30",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "type": "Microsoft.ContainerRegistry/registries/providers/roleAssignments",
+            "apiVersion": "2017-05-01",
+            "name": "[concat(variables('acrName'), '/Microsoft.Authorization/', parameters('roleNameGuid'))]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries/', variables('acrName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName'))]"
+            ],
+            "properties": {
+                "roleDefinitionId": "[variables('roleContributor')]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName')), '2018-11-30').principalId]",
+                "scope": "[resourceId('Microsoft.ContainerRegistry/registries/', variables('acrName'))]"
+            }
+        },
+        {
+            "name": "[variables('acrName')]",
+            "type": "Microsoft.ContainerRegistry/registries",
+            "apiVersion": "2019-05-01",
+            "location": "[parameters('location')]",
+            "sku": {
+                "name": "[parameters('acrSku')]"
+            },
+            "properties": {
+                "adminUserEnabled": "[parameters('acrAdminUserEnabled')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults",
+            "name": "[variables('keyVaultName')]",
+            "apiVersion": "2018-02-14",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.ContainerRegistry/registries/', variables('acrName'))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName'))]"
+            ],
+            "properties": {
+                "enabledForDeployment": "[parameters('enabledForDeployment')]",
+                "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+                "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+                "tenantId": "[parameters('tenantId')]",
+                "accessPolicies": [
+                    {
+                        "objectId": "[if(equals(parameters('objectId'), ''), reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities/', variables('identityName')), '2018-11-30').principalId, parameters('objectId'))]",
+                        "tenantId": "[parameters('tenantId')]",
+                        "permissions": {
+                            "keys": "[parameters('keysPermissions')]",
+                            "secrets": "[parameters('secretsPermissions')]"
+                        }
+                    }
+                ],
+                "sku": {
+                    "name": "[parameters('skuName')]",
+                    "family": "A"
+                },
+                "networkAcls": {
+                    "value": {
+                        "defaultAction": "Allow",
+                        "bypass": "AzureServices"
+                    }
+                }
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('keyVaultName'), '/', 'ACR-SERVER')]",
+            "apiVersion": "2018-02-14",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            ],
+            "properties": {
+                "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', variables('acrName')), '2019-05-01').loginServer]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('keyVaultName'), '/', 'ACR-USERNAME')]",
+            "apiVersion": "2018-02-14",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            ],
+            "properties": {
+                "value": "[variables('acrName')]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('keyVaultName'), '/', 'ACR-PASSWORD')]",
+            "apiVersion": "2018-02-14",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            ],
+            "properties": {
+                "value": "[listCredentials(resourceId('Microsoft.ContainerRegistry/registries', variables('acrName')), '2019-05-01').passwords[0].value]"
+            }
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('keyVaultName'), '/', parameters('secretName'))]",
+            "apiVersion": "2018-02-14",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.KeyVault/vaults', variables('keyVaultName'))]"
+            ],
+            "properties": {
+                "value": "[parameters('secretValue')]"
+            }
+        }
+    ]
+}

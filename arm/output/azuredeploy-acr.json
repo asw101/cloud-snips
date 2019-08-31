@@ -1,0 +1,32 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "acrName": {
+            "type": "string",
+            "maxLength": 50,
+            "defaultValue": "",
+            "metadata": {
+                "description": "Name of your Azure Container Registry"
+            }
+        }
+    },
+    "variables": {
+        "acrName": "[if(equals(parameters('acrName'), ''), concat('acr', uniqueString(resourceGroup().id)), parameters('acrName'))]"
+    },
+    "resources": [],
+    "outputs": {
+        "registryServer": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'azuredeploy')).outputs.registryServer.value]"
+        },
+        "registryUsername": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'azuredeploy')).outputs.registryUsername.value]"
+        },
+        "registryPassword": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'azuredeploy')).outputs.registryPassword.value]"
+        }
+    }
+}

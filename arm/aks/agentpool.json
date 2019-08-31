@@ -1,0 +1,16 @@
+{
+    "properties": {
+        "orchestratorVersion": "1.14.6",
+        "count": 1,
+        "vmSize": "Standard_DS1_v2",
+        "osType": "Linux",
+        "nodeTaints": [
+            "Key1=Value1:NoSchedule"
+        ],
+        "enableAutoScaling": true,
+        "minCount": 1,
+        "maxCount": 100,
+        "scaleSetPriority": "Low",
+        "scaleSetEvictionPolicy": "Delete"
+    }
+}

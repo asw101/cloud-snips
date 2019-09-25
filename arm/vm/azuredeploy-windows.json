@@ -68,6 +68,7 @@
             "defaultValue": "MicrosoftWindowsDesktop",
             "allowedValues": [
                 "Canonical",
+                "MicrosoftWindowsServer",
                 "MicrosoftWindowsDesktop"
             ],
             "metadata": {
@@ -79,6 +80,7 @@
             "defaultValue": "Windows-10",
             "allowedValues": [
                 "UbuntuServer",
+                "WindowsServer",
                 "Windows-10"
             ],
             "metadata": {
@@ -91,6 +93,7 @@
             "allowedValues": [
                 "18.04-LTS",
                 "16.04.0-LTS",
+                "2019-Datacenter",
                 "19h1-pro"
             ],
             "metadata": {

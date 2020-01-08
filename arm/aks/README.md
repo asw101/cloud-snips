@@ -3,19 +3,20 @@
 ## aks - single:
 ```bash
 SUBSCRIPTION_ID=$(az account show | jq -r .id)
-RESOURCE_GROUP='190800-aks-1'
+RESOURCE_GROUP='200100-apps40'
 LOCATION='eastus'
 
 RANDOM_STR=$(openssl rand -hex 3)
 SP='sp.json'
 
 # create with --skip-assignment and:
+mkdir -p _/
 az ad sp create-for-rbac --skip-assignment > _/$SP
 
 SP_NAME=$(cat _/$SP | jq -r .name)
 SP_CLIENT_ID=$(cat _/$SP | jq -r .appId)
 SP_CLIENT_SECRET=$(cat _/$SP | jq -r .password)
-DEPLOYMENT_NAME="190800-aks-1"
+DEPLOYMENT_NAME="200100-aks-1"
 AKS_NAME="aks1"
 
 az group create -n $RESOURCE_GROUP -l $LOCATION
@@ -35,7 +36,7 @@ az group deployment create --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GR
     location=$LOCATION \
     servicePrincipalClientId=$SP_CLIENT_ID \
     servicePrincipalClientSecret=$SP_CLIENT_SECRET \
-    agentCount=1 \
+    agentCount=3 \
     agentVMSize=Standard_B2s \
     | jq -c .
 

@@ -10,7 +10,7 @@ az group create -n $RESOURCE_GROUP -l $LOCATION
 ## kv
 ```bash
 ADMIN_ID=$(az ad signed-in-user show | jq -r .objectId)
-az group deployment create --resource-group $RESOURCE_GROUP \
+az deployment group create --resource-group $RESOURCE_GROUP \
     --template-file azuredeploy.json \
     --parameters adminId="$ADMIN_ID"
 ```
@@ -18,10 +18,10 @@ az group deployment create --resource-group $RESOURCE_GROUP \
 ## kv-secret
 ```bash
 RESOURCE_GROUP='190800-test'
-az group deployment create --resource-group $RESOURCE_GROUP --template-file azuredeploy-secret.json \
+az deployment group create --resource-group $RESOURCE_GROUP --template-file azuredeploy-secret.json \
     --parameters keyVaultResourceGroup='190800-kv' keyVaultName='kvrecwetpjrqrmk'
 
 RESOURCE_GROUP='190800-test'
-az group deployment create --resource-group $RESOURCE_GROUP --template-file azuredeploy-secret.json \
+az deployment group create --resource-group $RESOURCE_GROUP --template-file azuredeploy-secret.json \
     --parameters keyVaultName='kvrecwetpjrqrmk'
 ```

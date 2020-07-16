@@ -23,11 +23,11 @@ az group create -n $RESOURCE_GROUP -l $LOCATION
 az role assignment create --assignee $SP_NAME --role Contributor \
     --scope "/subscriptions/${SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP}"
 
-az group deployment create --resource-group $RESOURCE_GROUP \
+az deployment group create --resource-group $RESOURCE_GROUP \
     --template-file ../empty/empty.json \
     --mode 'Complete'
 
-az group deployment create --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP  \
+az deployment group create --name $DEPLOYMENT_NAME --resource-group $RESOURCE_GROUP  \
     --template-file azuredeploy.json \
     --mode 'Complete' \
     --parameters \

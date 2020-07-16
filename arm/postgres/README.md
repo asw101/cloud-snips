@@ -10,7 +10,7 @@ az group create -n $RESOURCE_GROUP -l $LOCATION
 ## postgres
 ```bash
 SERVER_PASSWORD=$(openssl rand -hex 12)'A1!'
-az group deployment create --resource-group $RESOURCE_GROUP \
+az deployment group create --resource-group $RESOURCE_GROUP \
     --template-file azuredeploy.json \
     --parameters administratorLoginPassword=$SERVER_PASSWORD 
 ```
@@ -18,7 +18,7 @@ az group deployment create --resource-group $RESOURCE_GROUP \
 ## postgres + keyvault
 ```bash
 SERVER_PASSWORD=$(openssl rand -hex 12)'A1!'
-az group deployment create --resource-group $RESOURCE_GROUP \
+az deployment group create --resource-group $RESOURCE_GROUP \
     --template-file azuredeploy-kv.json \
     --parameters administratorLoginPassword=$SERVER_PASSWORD \
         location='centralus'

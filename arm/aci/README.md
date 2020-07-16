@@ -9,5 +9,5 @@ az group create -n $RESOURCE_GROUP -l $LOCATION
 
 ## aci
 ```bash
-az group deployment create --resource-group $RESOURCE_GROUP --template-file azuredeploy.json
+az deployment group create --resource-group $RESOURCE_GROUP --template-file azuredeploy.json
 ```

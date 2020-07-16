@@ -12,10 +12,10 @@ az group create -n $RESOURCE_GROUP -l $LOCATION
 RESOURCE_GROUP='190800-vmss'
 PASSWORD_OR_KEY="$(cat ~/.ssh/id_rsa.pub)"
 
-az group deployment create --resource-group $RESOURCE_GROUP --template-file azuredeploy.json \
+az deployment group create --resource-group $RESOURCE_GROUP --template-file azuredeploy.json \
     --parameters adminPasswordOrKey="$PASSWORD_OR_KEY"
 
-az group deployment create --resource-group $RESOURCE_GROUP --template-file azuredeploy.json \
+az deployment group create --resource-group $RESOURCE_GROUP --template-file azuredeploy.json \
     --parameters adminPasswordOrKey="$PASSWORD_OR_KEY" \
         vmName=vm2 \
         customDataUrl='https://gist.githubusercontent.com/asw101/40102c0abce14351b2c0d4efd3e342c9/raw/190800-docker.sh'
